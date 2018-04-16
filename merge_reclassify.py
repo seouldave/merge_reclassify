@@ -5,7 +5,7 @@ This module will only work with OSGEO folder containing scripts at C:/OSGeo4W64/
 """
 import os
 import subprocess
-
+import numpy as np
 
 class Merge:
 	"""Class to which merges country rasters from a specified directory and saves \
@@ -84,6 +84,34 @@ class Merge:
 		command = "C:/OSGeo4W64/bin/gdalbuildvrt.exe -input_file_list {0} {1}".format(list_file, vrt_name) #Command to call gdal
 		subprocess.call(command, shell=True)
 		os.remove(list_file)
+
+	def convert_vrt_to_tiff(self):
+		"""Function to convert VRT file to GeoTiff using GDAL
+		
+		Arguments:
+		None
+
+		Returns:
+		None
+		"""
+		vrt_name = os.path.join(self.path_to_save_name, "{0}.vrt".format(self.save_name))
+		tiff_name = os.path.join(self.path_to_save_name, "{0}_1_0_ND.tif".format(self.save_name))
+		command = "C:/OSGeo4W64/bin/gdal_translate.exe -ot Byte -a_nodata 255 -stats  {0} {1}".format(vrt_name, tiff_name)
+		subprocess.call(command, shell=True)
+		os.remove(vrt_name)
+
+	def reclassify_as_binary(self):
+		"""Function to reclassify <1_0_ND> raster as <1_ND>
+
+		Arguments:
+		None
+
+		Returns:
+		None
+		"""
+		tiff_1_0_nd = os.path.join(self.path_to_save_name, "{0}_1_0_ND.tif".format(self.save_name))
+		tiff_1_nd = os.path.join(self.path_to_save_name, "{0}_1_ND.tif".format(self.save_name))
+		command = 
 		
 	def test_function(self):
 		"""Function to test module"""
@@ -99,6 +127,10 @@ class Merge:
 		#############TEST3####################################
 		self.create_vrt()
 		print("Done")
+		self.convert_vrt_to_tiff()
+		print("Tiff made")
+		self.reclassify_as_binary()
+		print("Binary made")
 
 
 #test_obj = Merge(r'E:\Merge_script\Merge_UGM\datain\WP515640_Global\Raster\Covariates\UGM\2000-2012', "2001.tif", \
