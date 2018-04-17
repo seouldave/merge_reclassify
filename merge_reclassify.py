@@ -6,6 +6,8 @@ This module will only work with OSGEO folder containing scripts at C:/OSGeo4W64/
 import os
 import subprocess
 import numpy as np
+from osgeo import gdal
+import time
 
 class Merge:
 	"""Class to which merges country rasters from a specified directory and saves \
@@ -111,7 +113,10 @@ class Merge:
 		"""
 		tiff_1_0_nd = os.path.join(self.path_to_save_name, "{0}_1_0_ND.tif".format(self.save_name))
 		tiff_1_nd = os.path.join(self.path_to_save_name, "{0}_1_ND.tif".format(self.save_name))
-		command = 
+		##Below command will only work where GDAL bindings are in this path
+		command = 'C:/Python27/2713/scripts/gdal_calc.py -A {0} --outfile={1} \
+		--calc="A*(A==1) + 255*(A==0)" --NoDataValue 255'.format(tiff_1_0_nd, tiff_1_nd)
+		subprocess.call(command, shell=True)
 		
 	def test_function(self):
 		"""Function to test module"""
@@ -138,6 +143,9 @@ class Merge:
 #test_obj.test_function()
 
 for year in range(2001, 2012, 1):
+	start = time.time()
 	test_obj = Merge(r'E:\Merge_script\Merge_UGM\datain\WP515640_Global\Raster\Covariates\UGM\2000-2012', "{0}.tif".format(year), \
 		r'E:\Merge_script\Merge_UGM\dataout', "merge_{0}".format(year))
 	test_obj.test_function()
+	end = time.time()
+	print(end - start)
