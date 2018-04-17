@@ -98,7 +98,7 @@ class Merge:
 		"""
 		vrt_name = os.path.join(self.path_to_save_name, "{0}.vrt".format(self.save_name))
 		tiff_name = os.path.join(self.path_to_save_name, "{0}_1_0_ND.tif".format(self.save_name))
-		command = "C:/OSGeo4W64/bin/gdal_translate.exe -ot Byte -a_nodata 255 -stats  {0} {1}".format(vrt_name, tiff_name)
+		command = "C:/OSGeo4W64/bin/gdal_translate.exe -ot Byte -co NUM_THREADS=3 -co COMPRESS=LZW -co PREDICTOR=2 -a_nodata 255 -stats  {0} {1}".format(vrt_name, tiff_name)
 		subprocess.call(command, shell=True)
 		os.remove(vrt_name)
 
@@ -115,7 +115,7 @@ class Merge:
 		tiff_1_nd = os.path.join(self.path_to_save_name, "{0}_1_ND.tif".format(self.save_name))
 		##Below command will only work where GDAL bindings are in this path
 		command = 'C:/Python27/2713/scripts/gdal_calc.py -A {0} --outfile={1} \
-		--calc="A*(A==1) + 255*(A==0)" --NoDataValue 255'.format(tiff_1_0_nd, tiff_1_nd)
+		--calc="A*(A==1) + 255*(A==0)" --co NUM_THREADS=3 --co COMPRESS=LZW --co PREDICTOR=2'.format(tiff_1_0_nd, tiff_1_nd)
 		subprocess.call(command, shell=True)
 		
 	def test_function(self):
@@ -131,21 +131,34 @@ class Merge:
 		print("Done")
 		#############TEST3####################################
 		self.create_vrt()
-		print("Done")
+		print("Vrt Done")
 		self.convert_vrt_to_tiff()
 		print("Tiff made")
 		self.reclassify_as_binary()
 		print("Binary made")
 
 
-#test_obj = Merge(r'E:\Merge_script\Merge_UGM\datain\WP515640_Global\Raster\Covariates\UGM\2000-2012', "2001.tif", \
-#	r'E:\Merge_script\Merge_UGM\dataout', "merge_2001")
-#test_obj.test_function()
+# test_obj = Merge(r'E:\Merge_script\Merge_UGM\datain\WP515640_Global\Raster\Covariates\UGM\2000-2012', "2001.tif", \
+# 	r'E:\Merge_script\Merge_UGM\dataout', "merge_2001")
+# test_obj.test_function()
 
+# for year in range(2001, 2012, 1):
+# 	start = time.time()
+# 	test_obj = Merge(r'E:\Merge_script\Merge_UGM\datain\WP515640_Global\Raster\Covariates\UGM\2000-2012', "{0}.tif".format(year), \
+# 		r'E:\Merge_script\Merge_UGM\dataout', "merge_{0}".format(year))
+# 	test_obj.test_function()
+# 	end = time.time()
+# 	print(end - start)
+start = time.time()
 for year in range(2001, 2012, 1):
-	start = time.time()
-	test_obj = Merge(r'E:\Merge_script\Merge_UGM\datain\WP515640_Global\Raster\Covariates\UGM\2000-2012', "{0}.tif".format(year), \
-		r'E:\Merge_script\Merge_UGM\dataout', "merge_{0}".format(year))
-	test_obj.test_function()
-	end = time.time()
-	print(end - start)
+	start_in_loop = time.time()
+	first_epoc = Merge(r'Z:\WP515640_Global\Raster\Covariates\UGM\2000-2012', \
+		"{0}.tif".format(year), r'E:\Merge_script\Merge_UGM\dataout', "Urban_{0}".format(year))
+	first_epoc.test_function()
+	end_in_loop = time.time()
+	print ("{0} took {1} minutes".format(year, (end_in_loop - start_in_loop)/60))
+	del start_in_loop, first_epoc, end_in_loop
+
+end = time.time()
+print("Processing took {0} minutes".format((end-start)/60))
+
