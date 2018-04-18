@@ -83,10 +83,28 @@ class Merge:
 		list_file = os.path.join(self.path_to_save_name, "{0}_list.txt".format(self.save_name)) #file holding list of tiffs
 		vrt_name = os.path.join(self.path_to_save_name, "{0}.vrt".format(self.save_name)) #Output vrt name
 		####NOTE****The below path should be changed dependent on PC running program
-		command = "C:/OSGeo4W64/bin/gdalbuildvrt.exe -input_file_list {0} {1}".format(list_file, vrt_name) #Command to call gdal
+		command = "C:/OSGeo4W64/bin/gdalbuildvrt.exe -te -180.001249265 -71.999582844 \
+		180.001249295 84.0020831987 -input_file_list {0} {1}".format(list_file, vrt_name) #Command to call gdal
 		subprocess.call(command, shell=True)
 		os.remove(list_file)
 
+
+	def multiply_by_L0(self, tiff_path):
+		"""
+		Function to multiply global raster by L0 (0=land; ND=sea) to ensure missed \
+		land pixels are filled in to match mastergrid
+
+		Arguments:
+		tiff_path -> Path to merged file
+		""" 
+		mastergrid_L0 = r'E:\Merge_script\Merge_UGM\mask_0_ND\ccid100m_0_ND.tif'
+		out_tif = os.path.join(self.path_to_save_name, "{0}_1_0_ND.tif".format(self.save_name))
+		command = 'C:/Python27/2713/scripts/gdal_calc.py -A {0} -B {1} --outfile={2}\
+		--calc="B*(A==255) + A*(A==1) + A*(A==0)" --NoDataValue=255 --co NUM_THREADS=3\
+		 --co COMPRESS=LZW --co PREDICTOR=2 --type=Byte'.format(tiff_path, mastergrid_L0, out_tif)
+		subprocess.call(command, shell=True)
+
+######################THIS FUNCTION NOT NEEDED IF GDAL_CALC WORKS WITH VRT########################
 	def convert_vrt_to_tiff(self):
 		"""Function to convert VRT file to GeoTiff using GDAL
 		
@@ -132,7 +150,8 @@ class Merge:
 		#############TEST3####################################
 		self.create_vrt()
 		print("Vrt Done")
-		self.convert_vrt_to_tiff()
+		#self.convert_vrt_to_tiff() ##Try to do GDAL_calc multiply_by_L0 first
+		self.multiply_by_L0(os.path.join(self.path_to_save_name, "{0}.vrt".format(self.save_name)))
 		print("Tiff made")
 		self.reclassify_as_binary()
 		print("Binary made")
@@ -149,8 +168,10 @@ class Merge:
 # 	test_obj.test_function()
 # 	end = time.time()
 # 	print(end - start)
+########################TO DO 19/04 ----> try multiplying VRT with Mastergrid and then extract binary. ############################
+######################## Try multi #############################
 start = time.time()
-for year in range(2001, 2012, 1):
+for year in range(2001, 2004, 1):
 	start_in_loop = time.time()
 	first_epoc = Merge(r'Z:\WP515640_Global\Raster\Covariates\UGM\2000-2012', \
 		"{0}.tif".format(year), r'E:\Merge_script\Merge_UGM\dataout', "Urban_{0}".format(year))
