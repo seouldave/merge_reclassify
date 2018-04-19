@@ -84,7 +84,7 @@ class Merge:
 		vrt_name = os.path.join(self.path_to_save_name, "{0}.vrt".format(self.save_name)) #Output vrt name
 		####NOTE****The below path should be changed dependent on PC running program
 		command = "C:/OSGeo4W64/bin/gdalbuildvrt.exe -te -180.001249265 -71.999582844 \
-		180.001249295 84.0020831987 -input_file_list {0} {1}".format(list_file, vrt_name) #Command to call gdal
+		180.001249295 84.0020831987 -tr 0.00083333333 0.00083333333 -input_file_list {0} {1}".format(list_file, vrt_name) #Command to call gdal
 		subprocess.call(command, shell=True)
 		os.remove(list_file)
 
@@ -97,7 +97,7 @@ class Merge:
 		Arguments:
 		tiff_path -> Path to merged file
 		""" 
-		mastergrid_L0 = r'E:\Merge_script\Merge_UGM\mask_0_ND\ccid100m_0_ND.tif'
+		mastergrid_L0 = r'E:\Merge_script\Merge_UGM\mask_0_ND\ccid100m_0_ND_resamp.tif'
 		out_tif = os.path.join(self.path_to_save_name, "{0}_1_0_ND.tif".format(self.save_name))
 		command = 'C:/Python27/2713/scripts/gdal_calc.py -A {0} -B {1} --outfile={2}\
 		--calc="B*(A==255) + A*(A==1) + A*(A==0)" --NoDataValue=255 --co NUM_THREADS=3\
@@ -115,8 +115,9 @@ class Merge:
 		None
 		"""
 		vrt_name = os.path.join(self.path_to_save_name, "{0}.vrt".format(self.save_name))
-		tiff_name = os.path.join(self.path_to_save_name, "{0}_1_0_ND.tif".format(self.save_name))
-		command = "C:/OSGeo4W64/bin/gdal_translate.exe -ot Byte -co NUM_THREADS=3 -co COMPRESS=LZW -co PREDICTOR=2 -a_nodata 255 -stats  {0} {1}".format(vrt_name, tiff_name)
+		tiff_name = os.path.join(self.path_to_save_name, "{0}_1_0_ND_INTERIM.tif".format(self.save_name)) #Interim file still needs to be multiplied by L0 to clip coastline
+		command = "C:/OSGeo4W64/bin/gdal_translate.exe -ot Byte -tr 0.00083333333 0.00083333333 -co NUM_THREADS=3 \
+		-co COMPRESS=LZW -co PREDICTOR=2 -a_nodata 255 -stats {0} {1}".format(vrt_name, tiff_name)
 		subprocess.call(command, shell=True)
 		os.remove(vrt_name)
 
@@ -146,13 +147,15 @@ class Merge:
 		#############TEST2##########################################
 		#print(self.list_tiffs())
 		self.add_tiffs_to_file(self.list_tiffs())
-		print("Done")
+		print("Done List")
 		#############TEST3####################################
 		self.create_vrt()
 		print("Vrt Done")
-		#self.convert_vrt_to_tiff() ##Try to do GDAL_calc multiply_by_L0 first
-		self.multiply_by_L0(os.path.join(self.path_to_save_name, "{0}.vrt".format(self.save_name)))
-		print("Tiff made")
+		print("Converting VRT to tiff")
+		self.convert_vrt_to_tiff() ##Try to do GDAL_calc multiply_by_L0 first
+		print("Converted VRT to tiff - Multiply by mastergrid")
+		self.multiply_by_L0(os.path.join(self.path_to_save_name, "{0}_1_0_ND_INTERIM.tif".format(self.save_name)))
+		print("1_0 Tiff made - Reclassifying")
 		self.reclassify_as_binary()
 		print("Binary made")
 
@@ -161,25 +164,25 @@ class Merge:
 # 	r'E:\Merge_script\Merge_UGM\dataout', "merge_2001")
 # test_obj.test_function()
 
-# for year in range(2001, 2012, 1):
-# 	start = time.time()
-# 	test_obj = Merge(r'E:\Merge_script\Merge_UGM\datain\WP515640_Global\Raster\Covariates\UGM\2000-2012', "{0}.tif".format(year), \
-# 		r'E:\Merge_script\Merge_UGM\dataout', "merge_{0}".format(year))
-# 	test_obj.test_function()
-# 	end = time.time()
-# 	print(end - start)
+for year in range(2001, 2012, 1):
+	start = time.time()
+	test_obj = Merge(r'E:\Merge_script\Merge_UGM\datain\WP515640_Global\Raster\Covariates\UGM\2000-2012', "{0}.tif".format(year), \
+		r'E:\Merge_script\Merge_UGM\dataout', "merge_{0}".format(year))
+	test_obj.test_function()
+	end = time.time()
+	print(end - start)
 ########################TO DO 19/04 ----> try multiplying VRT with Mastergrid and then extract binary. ############################
-######################## Try multi #############################
-start = time.time()
-for year in range(2001, 2004, 1):
-	start_in_loop = time.time()
-	first_epoc = Merge(r'Z:\WP515640_Global\Raster\Covariates\UGM\2000-2012', \
-		"{0}.tif".format(year), r'E:\Merge_script\Merge_UGM\dataout', "Urban_{0}".format(year))
-	first_epoc.test_function()
-	end_in_loop = time.time()
-	print ("{0} took {1} minutes".format(year, (end_in_loop - start_in_loop)/60))
-	del start_in_loop, first_epoc, end_in_loop
+######################## Try multi ALSO Check NUM_Threads tag#############################
+# start = time.time()
+# for year in range(2001, 2004, 1):
+# 	start_in_loop = time.time()
+# 	first_epoc = Merge(r'Z:\WP515640_Global\Raster\Covariates\UGM\2000-2012', \
+# 		"{0}.tif".format(year), r'E:\Merge_script\Merge_UGM\dataout', "Urban_{0}".format(year))
+# 	first_epoc.test_function()
+# 	end_in_loop = time.time()
+# 	print ("{0} took {1} minutes".format(year, (end_in_loop - start_in_loop)/60))
+# 	del start_in_loop, first_epoc, end_in_loop
 
-end = time.time()
-print("Processing took {0} minutes".format((end-start)/60))
+# end = time.time()
+# print("Processing took {0} minutes".format((end-start)/60))
 
