@@ -164,25 +164,25 @@ class Merge:
 # 	r'E:\Merge_script\Merge_UGM\dataout', "merge_2001")
 # test_obj.test_function()
 
-for year in range(2001, 2012, 1):
-	start = time.time()
-	test_obj = Merge(r'E:\Merge_script\Merge_UGM\datain\WP515640_Global\Raster\Covariates\UGM\2000-2012', "{0}.tif".format(year), \
-		r'E:\Merge_script\Merge_UGM\dataout', "merge_{0}".format(year))
-	test_obj.test_function()
-	end = time.time()
-	print(end - start)
+# for year in range(2001, 2012, 1):
+# 	start = time.time()
+# 	test_obj = Merge(r'E:\Merge_script\Merge_UGM\datain\WP515640_Global\Raster\Covariates\UGM\2000-2012', "{0}.tif".format(year), \
+# 		r'E:\Merge_script\Merge_UGM\dataout', "merge_{0}".format(year))
+# 	test_obj.test_function()
+# 	end = time.time()
+# 	print(end - start)
 ########################TO DO 19/04 ----> try multiplying VRT with Mastergrid and then extract binary. ############################
 ######################## Try multi ALSO Check NUM_Threads tag#############################
-# start = time.time()
-# for year in range(2001, 2004, 1):
-# 	start_in_loop = time.time()
-# 	first_epoc = Merge(r'Z:\WP515640_Global\Raster\Covariates\UGM\2000-2012', \
-# 		"{0}.tif".format(year), r'E:\Merge_script\Merge_UGM\dataout', "Urban_{0}".format(year))
-# 	first_epoc.test_function()
-# 	end_in_loop = time.time()
-# 	print ("{0} took {1} minutes".format(year, (end_in_loop - start_in_loop)/60))
-# 	del start_in_loop, first_epoc, end_in_loop
+start = time.time()
+for year in range(2001, 2004, 1):
+	start_in_loop = time.time()
+	first_epoc = Merge(r'Z:\WP515640_Global\Raster\Covariates\UGM\2000-2012', \
+		"{0}.tif".format(year), r'E:\Merge_script\Merge_UGM\dataout', "Urban_{0}".format(year))
+	first_epoc.test_function()
+	end_in_loop = time.time()
+	print ("{0} took {1} minutes".format(year, (end_in_loop - start_in_loop)/60))
+	del start_in_loop, first_epoc, end_in_loop
 
-# end = time.time()
-# print("Processing took {0} minutes".format((end-start)/60))
+end = time.time()
+print("Processing took {0} minutes".format((end-start)/60))
 
